@@ -16,6 +16,11 @@ typedef struct {
 typedef struct {
 } Block;
 
+//free space management structure (with bitmap).
+typedef struct {
+    unsigned char bitmap[NUM_BLOCKS / 8]; // 1 bit per block
+} FreeSpace;
+
 //root directory structure.
 typedef struct {
     char name[32];
@@ -37,10 +42,9 @@ void formatVolume() {
     fwrite(&vcb, sizeof(VCB), 1, disk);
 
     //free space management initialization.
-    for (int i = 0; i < NUM_BLOCKS; i++) {
-        Block block;
-        fwrite(&block, sizeof(Block), 1, disk);
-    }
+    FreeSpace freeSpace;
+    memset(freeSpace.bitmap, 0xFF, sizeof(freeSpace.bitmap)); //setting all bits to 1: free.
+    fwrite(&freeSpace, sizeof(FreeSpace), 1, disk);
 
     //root directory with "." and ".." initialization.
     DirectoryEntry rootDir[2];
